@@ -1,3 +1,42 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Base theme - works even if Tailwind is slow to load */
+:root {
+  --chess-bg: #0f172a;
+  --chess-surface: #1e293b;
+  --chess-border: #334155;
+  --chess-text: #f1f5f9;
+  --chess-accent: #22c55e;
+  --chess-board-light: #f0d9b5;
+  --chess-board-dark: #b58863;
+}
+
+body {
+  background: var(--chess-bg);
+  color: var(--chess-text);
+  min-height: 100vh;
+}
+
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-down {
+  animation: slide-down 0.3s ease-out;
+}
+
+/* Chess piece font - ensure symbols render */
+.chess-piece {
+  font-family: "Segoe UI Symbol", "Apple Symbol", sans-serif;
+  line-height: 1;
+  user-select: none;
+}

@@ -48,7 +48,11 @@ io.on("connection", (socket) => {
     const color = playerIndex === 0 ? "w" : "b";
 
     socket.emit("playerColor", color);
-    socket.emit("boardState", game.chess.fen());
+    const history = game.chess.history({ verbose: true });
+    socket.emit("boardState", {
+      fen: game.chess.fen(),
+      history: history.map((m) => ({ from: m.from, to: m.to, san: m.san, color: m.color, captured: m.captured })),
+    });
 
     io.to(gameId).emit("playerCount", game.players.length);
 
@@ -63,20 +67,38 @@ io.on("connection", (socket) => {
 
   socket.on("move", ({ gameId, move }) => {
     const game = games[gameId];
-    if (!game) return;
+    if (!game) {
+      socket.emit("moveError", "Game not found");
+      return;
+    }
 
     const playerIndex = game.players.indexOf(socket.id);
+    if (playerIndex === -1) {
+      socket.emit("moveError", "You are not part of this game");
+      return;
+    }
+
     const playerColor = playerIndex === 0 ? "w" : "b";
 
-    if (game.chess.turn() !== playerColor) return;
+    if (game.chess.turn() !== playerColor) {
+      socket.emit("moveError", "Not your turn!");
+      return;
+    }
 
     try {
       const result = game.chess.move(move);
       if (result) {
-        io.to(gameId).emit("boardState", game.chess.fen());
+        const history = game.chess.history({ verbose: true });
+        io.to(gameId).emit("boardState", {
+          fen: game.chess.fen(),
+          history: history.map((m) => ({ from: m.from, to: m.to, san: m.san, color: m.color, captured: m.captured })),
+        });
+      } else {
+        socket.emit("moveError", "Invalid move");
       }
-    } catch {
-      console.log("Invalid move");
+    } catch (error: any) {
+      console.log("Invalid move:", error.message);
+      socket.emit("moveError", error.message || "Invalid move");
     }
   });
 
@@ -85,6 +107,8 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(5000, () => {
-  console.log("Server running on port 5000");
+const PORT = process.env.PORT || 5000;
+
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
