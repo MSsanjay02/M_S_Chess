@@ -1,11 +1,15 @@
 import { Routes, Route } from "react-router-dom";
+import Landing from "./pages/Landing";
+import Login from "./pages/Login";
+import Lobby from "./pages/Lobby";
 import ChessBoard from "./components/ChessBoard";
-import Home from "./pages/Home";
 
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
+      <Route path="/" element={<Landing />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/lobby" element={<Lobby />} />
       <Route path="/room/:roomId" element={<ChessBoard />} />
     </Routes>
   );
